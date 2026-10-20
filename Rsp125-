@@ -1,0 +1,32 @@
+import yfinance as yf
+import pandas as pd
+
+def trading_bot(symbol, short_window=20, long_window=50):
+    # 1. Fetch Market Data
+    print(f"Fetching data for {symbol}...")
+    df = yf.download(symbol, period="6m", interval="1d")
+    
+    # 2. Calculate Moving Averages
+    df['SMA_Short'] = df['Close'].rolling(window=short_window).mean()
+    df['SMA_Long'] = df['Close'].rolling(window=long_window).mean()
+    
+    # 3. Generate Signal
+    latest_short = df['SMA_Short'].iloc[-1]
+    latest_long = df['SMA_Long'].iloc[-1]
+    prev_short = df['SMA_Short'].iloc[-2]
+    prev_long = df['SMA_Long'].iloc[-2]
+    
+    # Golden Cross (Buy) / Death Cross (Sell) Logic
+    if prev_short < prev_long and latest_short > latest_long:
+        signal = "BUY SIGNAL 🟢 (Bullish Crossover)"
+    elif prev_short > prev_long and latest_short < latest_long:
+        signal = "SELL SIGNAL 🔴 (Bearish Crossover)"
+    else:
+        signal = "HOLD ⚪ (No Strong Crossover)"
+        
+    print(f"Latest Short MA ({short_window}): {latest_short:.2f}")
+    print(f"Latest Long MA ({long_window}): {latest_long:.2f}")
+    print(f"Current Signal: {signal}")
+
+# Example Usage (e.g., RELIANCE.NS, AAPL, BTC-USD)
+trading_bot("RELIANCE.NS")
